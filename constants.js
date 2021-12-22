@@ -1,0 +1,90 @@
+export const PLACEHOLDERS = {
+    DISTINCT_TYPE: '%DISTINCT_TYPE',
+    PRIORITY: '%PRIORITY',
+    IS_STRAIGHT_JOIN: '%IS_STRAIGHT_JOIN',
+    RESULT_TYPE: '%RESULT_TYPE',
+    SQL_PREFORM: '%SQL_PREFORM',
+    FIELDS: '%FIELDS',
+    INTO: '%INTO',
+    FROM: '%FROM',
+    JOIN: '%JOIN',
+    WHERE: '%WHERE',
+    GROUP: '%GROUP',
+    HAVING: '%HAVING',
+    ORDER: '%ORDER',
+    LIMIT: '%LIMIT',
+    INTO_OPTIONS_BEFORE: '%INTO_OPTIONS_BEFORE',
+    FOR: '%FOR',
+    INTO_OPTIONS_AFTER: '%INTO_OPTIONS_AFTER',
+};
+export const BASIC_TEMPLATES = {
+    SELECT: `SELECT %DISTINCT_TYPE %PRIORITY %IS_STRAIGHT_JOIN %RESULT_TYPE %SQL_PREFORM %FIELDS %INTO %FROM %JOIN ` +
+        `%WHERE %GROUP %HAVING %ORDER %LIMIT %INTO_OPTIONS_BEFORE %FOR %INTO_OPTIONS_AFTER`,
+};
+export const DISTINCT_TYPE = {
+    DEFAULT: null,
+    ALL: 'ALL',
+    DISTINCT: 'DISTINCT ',
+    DISTINCTROW: 'DISTINCTROW ',
+};
+export const RESULT_TYPE = {
+    DEFAULT: null,
+    SQL_SMALL_RESULT: 'SQL_SMALL_RESULT',
+    SQL_BIG_RESULT: 'SQL_BIG_RESULT',
+    SQL_BUFFER_RESULT: 'SQL_BUFFER_RESULT'
+};
+export const SQL_PREFORM_TYPE = {
+    DEFAULT: null,
+    SQL_NO_CACHE: 'SQL_NO_CACHE',
+    SQL_CALC_FOUND_ROWS: 'SQL_CALC_FOUND_ROWS'
+}
+export const FIELD_TYPE = {
+    SIMPLE: 'SIMPLE',
+    FUNCTION: 'FUNCTION',
+    LITERAL: 'LITERAL',
+}
+export const CONDITION_TYPES = {
+    EQUAL: '=',
+    NOT_EQUAL: '<>',
+    LT: '<',
+    LTE: '<=',
+    GT: '>',
+    GTE: '>=',
+    LIKE: 'LIKE',
+    NOT_LIKE: 'NOT LIKE',
+    IS_NULL: 'IS NULL',
+    IS_NOT_NULL: 'IS NOT NULL',
+    BETWEEN: 'BETWEEN',
+    IN: 'IN',
+    RANGE: 'RANGE',
+    LOGIC: 'LOGIC',
+}
+export const LOGIC_TYPES = {
+    AND: 'AND',
+    OR: 'OR',
+    XOR: 'XOR'
+}
+export const SORT_TYPES = {
+    ASC: 'ASC',
+    DESC: 'DESC',
+}
+export const JOIN_TYPES = {
+    LEFT: 'LEFT',
+    RIGHT: 'RIGHT',
+    INNER: 'INNER',
+    OUTER: 'OUTER',
+    CROSS: 'CROSS',
+    LEFT_INNER: 'LEFT_INNER',
+    LEFT_OUTER: 'LEFT_OUTER',
+    RIGHT_INNER: 'RIGHT_INNER',
+    RIGHT_OUTER: 'RIGHT_OUTER',
+    CROSS_INNER: 'CROSS_INNER',
+    DEFAULT: ''
+
+}
+
+export const FROM_MODE = {
+    FROM: 'FROM',
+    NESTED: '',
+    JOIN: '',
+}
