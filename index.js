@@ -2,7 +2,14 @@ import {
     FIELD_TYPE,
     PLACEHOLDERS
 } from "./constants.js";
-import {defaultConditions, defaultJoins, defaultLimit, defaultOrder, defaultTables} from "./defaults.js";
+import {
+    defaultConditions, defaultFields,
+    defaultJoins,
+    defaultLimit,
+    defaultOptions,
+    defaultOrder,
+    defaultTables
+} from "./defaults.js";
 
 class Query {
 
