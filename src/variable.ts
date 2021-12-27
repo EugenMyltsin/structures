@@ -1,22 +1,24 @@
 import {preparedChunk} from "./types";
+import {d} from "./util.js";
 
 enum variableType {
-    FIELD = 'FIELD',
-    FUNCTION = 'FUNCTION',
-    LITERAL = 'LITERAL',
-    TABLE = 'TABLE',
+    SIMPLE,
+    FIELD,
+    FUNCTION,
+    LITERAL,
+    TABLE,
 }
 
 type fieldParams = {
     name: string,
-    table?: string,
+    table?: Variable,
     alias?: string
 }
 
 type funcParams = {
     funcName: string,
     alias?: string,
-    params?: (string | number | boolean | null)[]
+    params?: Variable[]
 }
 
 type tableParams = {
@@ -28,112 +30,111 @@ type tableParams = {
 type literalParams = {
     expression: string | null
 }
-export function parseVariable(variable: Variable | Variable[] | string | number, noCahce: boolean = false): preparedChunk {
 
-    if (!(variable instanceof Variable)) {
-        let statement: string = '?';
-        let replacers = [`'${variable}'`];
-        if(typeof variable === typeof "string"){
-            if(noCahce){
-                statement = `'${variable}'`;
-                replacers = [];
-            }else{
-                replacers = [`'${variable}'`];
-            }
-        }else{
-            if(noCahce){
-                statement = variable.toString();
-                replacers = [];
-            }else{
-                replacers = [variable.toString()]
-            }
-        }
-        return  {statement, replacers}
-    } else {
-        let statement;
-        let replacers = [];
-        if (variable.type === variableType.LITERAL) {
-            const params = <literalParams>variable.params;
-            statement = params.expression;
-            replacers = []
-        }
+type simpleParam = string | number | boolean;
 
-        if (variable.type === variableType.FIELD) {
-            const pieces = [];
-            const params = <fieldParams>variable.params;
-            if (params.table) {
-                pieces.push(`${params.table}.`)
-            }
-            pieces.push(`${params.name}`)
-            if (params.alias) {
-                pieces.push(` as ${params.alias}`)
-            }
-            statement = pieces.join('');
-            replacers = []
-        }
-
-        if (variable.type === variableType.FUNCTION) {
-            const params = <funcParams>variable.params;
-            const pieces = [];
-            pieces.push(`${params.funcName}`)
-            if (params.params) {
-                const paramList = []
-                params.params.forEach((param: string | number | boolean) => {
-                    paramList.push('?');
-                    replacers.push(param);
-                })
-                pieces.push(`(${paramList.join(', ')})`)
-            }
-            if (params.alias) {
-                pieces.push(` as ${params.alias}`)
-            }
-            statement = pieces.join('')
-        }
-
-        if (variable.type === variableType.TABLE) {
-            const pieces = [];
-            const params = <tableParams>variable.params;
-            if (params.database) {
-                pieces.push(`\`${params.database}\`.`)
-            }
-            pieces.push(`\`${params.name}\``)
-            if (params.alias) {
-                pieces.push(` as ${params.alias}`)
-            }
-            statement = pieces.join('');
-            replacers = [];
-        }
-
-        if(noCahce){
-            replacers.forEach(replacer => {
-                statement = statement.replace('?', replacer)
-            })
-            replacers = []
-        }
-
-        return  {statement, replacers}
-    }
-}
+type variableParams = fieldParams | funcParams | literalParams | tableParams | simpleParam;
 
 export class Variable {
-    public readonly type: variableType;
-    public readonly params: fieldParams | funcParams | literalParams | tableParams;
+    public readonly params: variableParams;
+    private readonly type: variableType;
 
-    private constructor(params: fieldParams | funcParams | literalParams | tableParams, type: variableType) {
-        this.type = type
-        this.params = params
+    private constructor(params: variableParams, type: variableType) {
+        this.params = params;
+        this.type = type;
     }
 
-    static field(params: fieldParams) {
-        return new Variable(params, variableType.FIELD)
+    parse(noCache = false): preparedChunk {
+        let statement = '';
+        let replacers = []
+        if (this.type === variableType.SIMPLE) {
+            const params = <simpleParam>this.params;
+            statement = <string>(noCache ? `'${params}'` : '?');
+            replacers = noCache ? [] : [this.params];
+        }
+        if (this.type === variableType.LITERAL) {
+            const params = <literalParams>this.params;
+            statement = params.expression;
+        }
+        if (this.type === variableType.FUNCTION) {
+            const params = <funcParams>this.params;
+            const pieces: string[] = [params.funcName, '('];
+            const funcData = params.params.map(param => param.parse(true));
+            if (noCache) {
+                pieces.push(funcData.map(item => item.statement).join(', '))
+            } else {
+                pieces.push(funcData.map(item => {
+                    replacers.push(item.statement)
+                    return '?'
+                }).join(', '))
+            }
+            pieces.push(')');
+            if (params.alias) {
+                pieces.push(`as ${params.alias}`);
+            }
+            statement = pieces.join(' ');
+        }
+        if (this.type === variableType.TABLE) {
+            const params = <tableParams>this.params;
+            const pieces = [];
+            if (params?.database) {
+                pieces.push(`\`${params.database}\`.`)
+            }
+            pieces.push(`\`${params.name}\``);
+            if (params.alias) {
+                pieces.push(` as ${params.alias}`);
+            }
+            if (noCache) {
+                statement = pieces.join('');
+            } else {
+                statement = '?';
+                replacers = [pieces.join('')];
+            }
+        }
+        if (this.type === variableType.FIELD) {
+            const pieces = [];
+            const params = <fieldParams>this.params;
+            if (params?.table) {
+                pieces.push(`${params.table.parse(true).statement}.`);
+            }
+            pieces.push(`\`${params.name}\``);
+            if (params.alias) {
+                pieces.push(` as ${params.alias}`);
+            }
+            if (noCache) {
+                statement = pieces.join('');
+            } else {
+                statement = '?';
+                replacers = [pieces.join('')];
+            }
+        }
+
+        if(noCache){
+            replacers.forEach(replace => {
+                statement = statement.replace('?', <string> replace);
+            })
+            replacers = [];
+
+        }
+
+        return {statement, replacers}
+
     }
 
-    static fn(params: funcParams) {
-        return new Variable(params, variableType.FUNCTION)
+    static simple(params: simpleParam) {
+        return new Variable(params, variableType.SIMPLE);
     }
 
     static literal(params: literalParams) {
         return new Variable(params, variableType.LITERAL)
+    }
+
+    static func(params: funcParams) {
+        return new Variable(params, variableType.FUNCTION)
+    }
+
+    static field(params: fieldParams) {
+        return new Variable(params, variableType.FIELD)
     }
 
     static table(params: tableParams) {

@@ -1,7 +1,8 @@
 import {cacheEnum, calcEnum, distinctEnum, priorityEnum, resultEnum, straightJoinEnum} from "./enums";
 import {Variable} from "./variable.js";
-import {Condition, parseCondition} from "./condition.js";
+import {between, Condition, equals, includes, isNull} from "./condition.js";
 import {d} from "./util.js";
+import {expression, logic} from "./expression.js";
 
 type optionsType = {
     distinct?: distinctEnum,
@@ -23,10 +24,18 @@ type queryParams = {
     limit?: any
 }
 
+const simple = Variable.simple(1);
 const literal = Variable.literal({expression: 'SOME_LITERAL'});
-const fn = Variable.fn({funcName: 'count', alias: 'cnt', params: ['userID']});
-const field = Variable.field({name: 'userID', table: 'users'});
-const table = Variable.table({name: 'user', alias: 'u', database: 'test'});
+const table = Variable.table({name: 'user', database: 'test'});
+const field = Variable.field({name: 'userID', table});
+const func = Variable.func({funcName: 'count', params: [field]});
+const cond = isNull({key: field})
+const expr = expression([
+    cond, logic.OR, [
+        equals({key: func, value: Variable.simple(1)}),
+        logic.AND,
+        equals({key: func, value: Variable.simple(2)}),
+    ]
+], true);
 
-const eq = Condition.includes({key: field, value: [fn, 1, 'x']});
-d(parseCondition(eq))
+d(expr)
