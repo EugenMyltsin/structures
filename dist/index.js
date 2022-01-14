@@ -14,6 +14,6 @@ const expr = expression([
         logic.AND,
         equals({ key: func, value: Variable.simple(2) }),
     ]
-], true);
+], false);
 d(expr);
 //# sourceMappingURL=index.js.map

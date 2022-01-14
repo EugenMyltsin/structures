@@ -3,6 +3,7 @@ import {Variable} from "./variable.js";
 import {between, Condition, equals, includes, isNull} from "./condition.js";
 import {d} from "./util.js";
 import {expression, logic} from "./expression.js";
+import {preparedChunk} from "./types";
 
 type optionsType = {
     distinct?: distinctEnum,
@@ -18,7 +19,7 @@ type queryParams = {
     fields?: Variable[],
     tables?: any
     joins?: any,
-    filter?: any,
+    filter?: preparedChunk,
     group?: any,
     order?: any,
     limit?: any
@@ -36,6 +37,6 @@ const expr = expression([
         logic.AND,
         equals({key: func, value: Variable.simple(2)}),
     ]
-], true);
+], false);
 
 d(expr)

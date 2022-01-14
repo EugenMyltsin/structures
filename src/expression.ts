@@ -1,5 +1,6 @@
 import {Condition} from "./condition.js";
 import {d} from "./util.js";
+import {preparedChunk} from "./types";
 
 export enum logic {
     OR,
@@ -9,7 +10,7 @@ export enum logic {
 
 type expressionType = (Condition | logic | (Condition | logic)[])[];
 
-export function expression(params: expressionType, noCache?: boolean) {
+export function expression(params: expressionType, noCache?: boolean): preparedChunk {
     const pieces = [];
     let replacers = [];
 
